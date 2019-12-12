@@ -64,18 +64,6 @@
             android:textStyle="bold"
             android:layout_alignTop="@+id/tutorial3_activity_java_surface_view" />
 
-        <Button
-            android:id="@+id/submit"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentRight="true"
-            android:layout_below="@+id/results"
-            android:layout_marginEnd="18dp"
-            android:layout_marginRight="18dp"
-            android:textAllCaps="false"
-            android:text="Submit" />
-
     </RelativeLayout>
 
 </ScrollView>

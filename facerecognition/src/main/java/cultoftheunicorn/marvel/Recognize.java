@@ -1,7 +1,6 @@
 package cultoftheunicorn.marvel;
 
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Environment;
@@ -9,8 +8,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.View;
-import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -35,8 +32,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashSet;
-import java.util.Set;
 
 public class Recognize extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2 {
 
@@ -60,9 +55,6 @@ public class Recognize extends AppCompatActivity implements CameraBridgeViewBase
     Handler mHandler;
     PersonRecognizer fr;
     ToggleButton scan;
-    Set<String> uniqueNames = new HashSet<String>();
-    // max number of people to detect in a session
-    String[] uniqueNamesArray = new String[10];
     Labels labelsFile;
     private int faceState = IDLE;
     private Mat mRgba;
@@ -162,19 +154,12 @@ public class Recognize extends AppCompatActivity implements CameraBridgeViewBase
             @Override
             public void handleMessage(Message msg) {
                 /*
-                    display a newline separated list of individual names
+                   display name of last detected face
                  */
                 String tempName = msg.obj.toString();
                 if (!(tempName.equals("Unknown"))) {
                     tempName = capitalize(tempName);
-                    uniqueNames.add(tempName);
-                    uniqueNamesArray = uniqueNames.toArray(new String[uniqueNames.size()]);
-                    StringBuilder strBuilder = new StringBuilder();
-                    for (int i = 0; i < uniqueNamesArray.length; i++) {
-                        strBuilder.append(uniqueNamesArray[i] + "\n");
-                    }
-                    String textToDisplay = strBuilder.toString();
-                    results.setText(textToDisplay);
+                    results.setText(tempName);
                 }
             }
         };
@@ -190,6 +175,7 @@ public class Recognize extends AppCompatActivity implements CameraBridgeViewBase
                     }
                     faceState = SEARCHING;
                 } else {
+                    results.setText("");
                     faceState = IDLE;
                 }
             }
@@ -199,21 +185,6 @@ public class Recognize extends AppCompatActivity implements CameraBridgeViewBase
         if (!success) {
             Log.e("Error", "Error creating directory");
         }
-
-        Button submit = (Button) findViewById(R.id.submit);
-        submit.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (uniqueNames.size() > 0) {
-                    Intent intent = new Intent(Recognize.this, ReviewResults.class);
-                    intent.putExtra("list", uniqueNamesArray);
-                    startActivity(intent);
-                } else {
-                    Toast.makeText(Recognize.this, "Empty list cannot be sent further", Toast.LENGTH_LONG).show();
-                }
-            }
-        });
-
     }
 
     @Override
@@ -271,6 +242,7 @@ public class Recognize extends AppCompatActivity implements CameraBridgeViewBase
             textTochange = fr.predict(m);
             mLikely = fr.getProb();
             msg = new Message();
+            // Log.d("recognizer", "message: " + textTochange);
             msg.obj = textTochange;
             mHandler.sendMessage(msg);
 
