@@ -33,43 +33,103 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class Training extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2 {
-
-    public static final int JAVA_DETECTOR = 0;
-    public static final int NATIVE_DETECTOR = 1;
-    public static final int TRAINING = 0;
-    public static final int IDLE = 2;
-    static final long MAXIMG = 10;
-    private static final String TAG = "OCVSample::Activity";
-    private static final Scalar FACE_RECT_COLOR = new Scalar(0, 255, 0, 255);
-    private static final int frontCam = 1;
-    private static final int backCam = 2;
+public class Training extends AppCompatActivity {
 
     static {
         OpenCVLoader.initDebug();
         System.loadLibrary("opencv_java");
     }
 
+    public static final int TRAINING = 0;
+    public static final int IDLE = 2;
+    private static final long MAXIMG = 10;
+    private static final String TAG = "OCVSample::Activity";
+    private static final Scalar FACE_RECT_COLOR = new Scalar(255, 0, 0, 255);
+
     String mPath = "";
-    String text;
+    String userName;
     Bitmap mBitmap;
-    Handler mHandler;
+    Handler mHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            Log.d(TAG, "handleMessage");
+            if (msg.obj == "IMG") {
+                Canvas canvas = new Canvas();
+                canvas.setBitmap(mBitmap);
+                imageView.setImageBitmap(mBitmap);
+                if (countImages >= MAXIMG - 1) {
+                    buttonCapture.setChecked(false);
+                    captureOnClick();
+                }
+            }
+        }
+    };
+
     PersonRecognizer fr;
-    ToggleButton capture;
+
     int countImages = 0;
-    Labels labelsFile;
     private int faceState = IDLE;
     private Mat mRgba;
     private Mat mGray;
-    private File mCascadeFile;
     private CascadeClassifier mJavaDetector;
-    private int mDetectorType = JAVA_DETECTOR;
-    private String[] mDetectorName;
-    private float mRelativeFaceSize = 0.2f;
     private int mAbsoluteFaceSize = 0;
-    private int mLikely = 999;
-    private Tutorial3View mOpenCvCameraView;
-    private ImageView Iv;
+
+    private ToggleButton buttonCapture;
+    private Tutorial3View tutorial3View;
+    private ImageView imageView;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_training);
+
+        userName = getIntent().getStringExtra("name");
+
+        imageView = (ImageView) findViewById(R.id.imagePreview);
+
+        buttonCapture = (ToggleButton) findViewById(R.id.capture);
+        buttonCapture.setOnCheckedChangeListener(onCheckedChangedListener);
+
+        tutorial3View = (Tutorial3View) findViewById(R.id.tutorial3_activity_java_surface_view);
+        tutorial3View.setCvCameraViewListener(cvCameraViewListener2);
+
+        mPath = Environment.getExternalStorageDirectory() + "/facerecogOCV/";
+
+        if (!new File(mPath).mkdirs()) {
+            Log.e("Error", "Error creating directory");
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (tutorial3View != null)
+            tutorial3View.disableView();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        tutorial3View.disableView();
+    }
+
+    private void captureOnClick() {
+        if (buttonCapture.isChecked())
+            faceState = TRAINING;
+        else {
+            Toast.makeText(this, "Captured", Toast.LENGTH_SHORT).show();
+            countImages = 0;
+            faceState = IDLE;
+            imageView.setImageResource(R.drawable.user_image);
+        }
+    }
+
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
         public void onManagerConnected(int status) {
@@ -78,15 +138,13 @@ public class Training extends AppCompatActivity implements CameraBridgeViewBase.
                     Log.i(TAG, "OpenCV loaded successfully");
 
                     fr = new PersonRecognizer(mPath);
-                    String s = getResources().getString(R.string.Straininig);
-                    //Toast.makeText(getApplicationContext(),s, Toast.LENGTH_LONG).show();
                     fr.load();
 
                     try {
                         // load cascade file from application resources
                         InputStream is = getResources().openRawResource(R.raw.lbpcascade_frontalface);
                         File cascadeDir = getDir("cascade", Context.MODE_PRIVATE);
-                        mCascadeFile = new File(cascadeDir, "lbpcascade.xml");
+                        File mCascadeFile = new File(cascadeDir, "lbpcascade.xml");
                         FileOutputStream os = new FileOutputStream(mCascadeFile);
 
                         byte[] buffer = new byte[4096];
@@ -111,8 +169,8 @@ public class Training extends AppCompatActivity implements CameraBridgeViewBase.
                         Log.e(TAG, "Failed to load cascade. Exception thrown: " + e);
                     }
 
-                    mOpenCvCameraView.setCamFront();
-                    mOpenCvCameraView.enableView();
+                    tutorial3View.setCamFront();
+                    tutorial3View.enableView();
 
                 }
                 break;
@@ -126,166 +184,73 @@ public class Training extends AppCompatActivity implements CameraBridgeViewBase.
         }
     };
 
-    public Training() {
-        mDetectorName = new String[2];
-        mDetectorName[JAVA_DETECTOR] = "Java";
-        mDetectorName[NATIVE_DETECTOR] = "Native (tracking)";
+    CameraBridgeViewBase.CvCameraViewListener2 cvCameraViewListener2 = new CameraBridgeViewBase.CvCameraViewListener2() {
+        @Override
+        public void onCameraViewStarted(int width, int height) {
+            Log.d(TAG, "onCameraViewStarted");
+            mGray = new Mat();
+            mRgba = new Mat();
+        }
 
-        Log.i(TAG, "Instantiated new " + this.getClass());
-    }
+        @Override
+        public void onCameraViewStopped() {
+            Log.d(TAG, "onCameraViewStopped");
+            mGray.release();
+            mRgba.release();
+        }
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_training);
+        @Override
+        public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
+            Log.d(TAG, "onCameraFrame");
+            mRgba = inputFrame.rgba();
+            mGray = inputFrame.gray();
 
-        /*Toolbar toolbar = (Toolbar) findViewById(R.id.app_bar);
-        setSupportActionBar(toolbar);
-
-        if(getSupportActionBar() != null) {
-            getSupportActionBar().setTitle("Training");
-        }*/
-
-        text = getIntent().getStringExtra("name");
-        Iv = (ImageView) findViewById(R.id.imagePreview);
-
-        capture = (ToggleButton) findViewById(R.id.capture);
-        capture.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                captureOnClick();
-            }
-        });
-
-        mOpenCvCameraView = (Tutorial3View) findViewById(R.id.tutorial3_activity_java_surface_view);
-        mOpenCvCameraView.setCvCameraViewListener(this);
-
-        //mPath=getFilesDir()+"/facerecogOCV/";
-        mPath = Environment.getExternalStorageDirectory() + "/facerecogOCV/";
-
-        Log.e("Path", mPath);
-
-        labelsFile = new Labels(mPath);
-
-        mHandler = new Handler() {
-            @Override
-            public void handleMessage(Message msg) {
-                if (msg.obj == "IMG") {
-                    Canvas canvas = new Canvas();
-                    canvas.setBitmap(mBitmap);
-                    Iv.setImageBitmap(mBitmap);
-                    if (countImages >= MAXIMG - 1) {
-                        capture.setChecked(false);
-                        captureOnClick();
-                    }
+            if (mAbsoluteFaceSize == 0) {
+                int height = mGray.rows();
+                float mRelativeFaceSize = 0.2f;
+                if (Math.round(height * mRelativeFaceSize) > 0) {
+                    mAbsoluteFaceSize = Math.round(height * mRelativeFaceSize);
                 }
             }
-        };
 
-        boolean success = (new File(mPath)).mkdirs();
+            MatOfRect faces = new MatOfRect();
 
-        if (!success)
-            Log.e("Error", "Error creating directory");
-
-    }
-
-    void captureOnClick() {
-        if (capture.isChecked())
-            faceState = TRAINING;
-        else {
-            Toast.makeText(this, "Captured", Toast.LENGTH_SHORT).show();
-            countImages = 0;
-            faceState = IDLE;
-            Iv.setImageResource(R.drawable.user_image);
-        }
-    }
-
-    @Override
-    public void onCameraViewStarted(int width, int height) {
-        mGray = new Mat();
-        mRgba = new Mat();
-    }
-
-    @Override
-    public void onCameraViewStopped() {
-        mGray.release();
-        mRgba.release();
-    }
-
-    @Override
-    public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
-
-        mRgba = inputFrame.rgba();
-        mGray = inputFrame.gray();
-
-        if (mAbsoluteFaceSize == 0) {
-            int height = mGray.rows();
-            if (Math.round(height * mRelativeFaceSize) > 0) {
-                mAbsoluteFaceSize = Math.round(height * mRelativeFaceSize);
-            }
-            //  mNativeDetector.setMinFaceSize(mAbsoluteFaceSize);
-        }
-
-        MatOfRect faces = new MatOfRect();
-
-        if (mDetectorType == JAVA_DETECTOR) {
             if (mJavaDetector != null)
                 mJavaDetector.detectMultiScale(mGray, faces, 1.1, 2, 2, // TODO: objdetect.CV_HAAR_SCALE_IMAGE
                         new Size(mAbsoluteFaceSize, mAbsoluteFaceSize), new Size());
-        } else if (mDetectorType == NATIVE_DETECTOR) {
-            /*if (mNativeDetector != null)
-                mNativeDetector.detect(mGray, faces);*/
-        } else {
-            Log.e(TAG, "Detection method is not selected!");
-        }
 
-        Rect[] facesArray = faces.toArray();
+            Rect[] facesArray = faces.toArray();
 
-        if ((facesArray.length == 1) && (faceState == TRAINING) && (countImages < MAXIMG) && (!text.equals(""))) {
+            if ((facesArray.length == 1) && (faceState == TRAINING) && (countImages < MAXIMG) && (!userName.equals(""))) {
+                Mat m;
+                Rect r = facesArray[0];
 
+                m = mRgba.submat(r);
+                mBitmap = Bitmap.createBitmap(m.width(), m.height(), Bitmap.Config.ARGB_8888);
 
-            Mat m;
-            Rect r = facesArray[0];
+                Utils.matToBitmap(m, mBitmap);
 
+                Message msg = new Message();
+                msg.obj = "IMG";
+                mHandler.sendMessage(msg);
+                if (countImages < MAXIMG) {
+                    fr.add(m, userName);
+                    countImages++;
+                }
 
-            m = mRgba.submat(r);
-            mBitmap = Bitmap.createBitmap(m.width(), m.height(), Bitmap.Config.ARGB_8888);
-
-
-            Utils.matToBitmap(m, mBitmap);
-
-            Message msg = new Message();
-            String textTochange = "IMG";
-            msg.obj = textTochange;
-            mHandler.sendMessage(msg);
-            if (countImages < MAXIMG) {
-                fr.add(m, text);
-                countImages++;
+            }
+            for (Rect rect : facesArray) {
+                Core.rectangle(mRgba, rect.tl(), rect.br(), FACE_RECT_COLOR, 3);
             }
 
+            return mRgba;
         }
-        for (int i = 0; i < facesArray.length; i++)
-            Core.rectangle(mRgba, facesArray[i].tl(), facesArray[i].br(), FACE_RECT_COLOR, 3);
+    };
 
-        return mRgba;
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        mLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        if (mOpenCvCameraView != null)
-            mOpenCvCameraView.disableView();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        mOpenCvCameraView.disableView();
-    }
+    private CompoundButton.OnCheckedChangeListener onCheckedChangedListener = new CompoundButton.OnCheckedChangeListener() {
+        @Override
+        public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+            captureOnClick();
+        }
+    };
 }
