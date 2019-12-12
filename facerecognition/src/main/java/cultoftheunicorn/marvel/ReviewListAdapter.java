@@ -18,9 +18,9 @@ import java.util.List;
 
 public class ReviewListAdapter extends RecyclerView.Adapter<ReviewListAdapter.ReviewListViewHolder> {
 
-    private List<String> data;
     //private List<String> data1;
     Context context;
+    private List<String> data;
     private LayoutInflater inflater;
     private ReviewListAdapter.ClickListener clickListener;
 
@@ -54,6 +54,10 @@ public class ReviewListAdapter extends RecyclerView.Adapter<ReviewListAdapter.Re
         this.clickListener = clickListener;
     }
 
+    interface ClickListener {
+        void onItemClick(String name);
+    }
+
     class ReviewListViewHolder extends RecyclerView.ViewHolder {
 
         CheckBox checkBox;
@@ -69,10 +73,6 @@ public class ReviewListAdapter extends RecyclerView.Adapter<ReviewListAdapter.Re
                 }
             });
         }
-    }
-
-    interface ClickListener {
-        void onItemClick(String name);
     }
 
 }

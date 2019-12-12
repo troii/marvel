@@ -1,8 +1,7 @@
 package cultoftheunicorn.marvel;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-//import android.support.v7.widget.DividerItemDecoration;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -10,15 +9,16 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
-// uncomment when you enable firebase
-//import com.google.firebase.database.DatabaseReference;
-//import com.google.firebase.database.FirebaseDatabase;
-
 import org.opencv.cultoftheunicorn.marvel.R;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+//import android.support.v7.widget.DividerItemDecoration;
+// uncomment when you enable firebase
+//import com.google.firebase.database.DatabaseReference;
+//import com.google.firebase.database.FirebaseDatabase;
 
 class Attendees {
 
@@ -30,7 +30,7 @@ class Attendees {
     }
 
     public Attendees(String names, String date) {
-        this.names  = names;
+        this.names = names;
         this.date = date;
     }
 
@@ -58,7 +58,7 @@ public class ReviewResults extends AppCompatActivity implements ReviewListAdapte
         Toolbar toolbar = (Toolbar) findViewById(R.id.app_bar);
         setSupportActionBar(toolbar);
 
-        if(getSupportActionBar() != null) {
+        if (getSupportActionBar() != null) {
             getSupportActionBar().setTitle("Review and Mark");
         }
 
@@ -83,7 +83,7 @@ public class ReviewResults extends AppCompatActivity implements ReviewListAdapte
 
     @Override
     public void onItemClick(String name) {
-        if(commitList.contains(name))
+        if (commitList.contains(name))
             commitList.remove(name);
         else
             commitList.add(name);
@@ -91,7 +91,7 @@ public class ReviewResults extends AppCompatActivity implements ReviewListAdapte
 
     public void commit() {
 
-        if(commitList.size() != 0) {
+        if (commitList.size() != 0) {
 //            Enable firebase and then uncomment the following lines
 
 //            FirebaseDatabase database = FirebaseDatabase.getInstance();
@@ -115,8 +115,7 @@ public class ReviewResults extends AppCompatActivity implements ReviewListAdapte
 
 //            System.out.println(sb.toString());
 
-        }
-        else {
+        } else {
             Toast.makeText(getApplicationContext(), "Please select at least one student", Toast.LENGTH_SHORT).show();
         }
     }

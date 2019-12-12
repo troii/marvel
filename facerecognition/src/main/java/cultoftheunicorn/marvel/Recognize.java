@@ -3,11 +3,11 @@ package cultoftheunicorn.marvel;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -40,66 +40,50 @@ import java.util.Set;
 
 public class Recognize extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2 {
 
-    private static final String    TAG                 = "OCVSample::Activity";
-    private static final Scalar FACE_RECT_COLOR     = new Scalar(0, 255, 0, 255);
-    public static final int        JAVA_DETECTOR       = 0;
-    public static final int        NATIVE_DETECTOR     = 1;
-
-    public static final int SEARCHING= 1;
-    public static final int IDLE= 2;
-
-    private static final int frontCam =1;
-    private static final int backCam =2;
-
-
-    private int faceState=IDLE;
-
-
-    private Mat                    mRgba;
-    private Mat                    mGray;
-    private File mCascadeFile;
-    private CascadeClassifier mJavaDetector;
-
-    private int                    mDetectorType       = JAVA_DETECTOR;
-    private String[]               mDetectorName;
-
-    private float                  mRelativeFaceSize   = 0.2f;
-    private int                    mAbsoluteFaceSize   = 0;
-    private int mLikely=999;
-
-    String mPath="";
-
-    private Tutorial3View   mOpenCvCameraView;
-
-    private ImageView Iv;
-    Bitmap mBitmap;
-    Handler mHandler;
-
-    PersonRecognizer fr;
-    ToggleButton scan;
-
-    Set<String> uniqueNames = new HashSet<String>();
-
-    // max number of people to detect in a session
-    String[] uniqueNamesArray = new String[10];
-
+    public static final int JAVA_DETECTOR = 0;
+    public static final int NATIVE_DETECTOR = 1;
+    public static final int SEARCHING = 1;
+    public static final int IDLE = 2;
     static final long MAXIMG = 10;
+    private static final String TAG = "OCVSample::Activity";
+    private static final Scalar FACE_RECT_COLOR = new Scalar(0, 255, 0, 255);
+    private static final int frontCam = 1;
+    private static final int backCam = 2;
 
-    Labels labelsFile;
     static {
         OpenCVLoader.initDebug();
         System.loadLibrary("opencv_java");
     }
 
+    String mPath = "";
+    Bitmap mBitmap;
+    Handler mHandler;
+    PersonRecognizer fr;
+    ToggleButton scan;
+    Set<String> uniqueNames = new HashSet<String>();
+    // max number of people to detect in a session
+    String[] uniqueNamesArray = new String[10];
+    Labels labelsFile;
+    private int faceState = IDLE;
+    private Mat mRgba;
+    private Mat mGray;
+    private File mCascadeFile;
+    private CascadeClassifier mJavaDetector;
+    private int mDetectorType = JAVA_DETECTOR;
+    private String[] mDetectorName;
+    private float mRelativeFaceSize = 0.2f;
+    private int mAbsoluteFaceSize = 0;
+    private int mLikely = 999;
+    private Tutorial3View mOpenCvCameraView;
+    private ImageView Iv;
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
         public void onManagerConnected(int status) {
             switch (status) {
-                case LoaderCallbackInterface.SUCCESS:
-                {
+                case LoaderCallbackInterface.SUCCESS: {
                     Log.i(TAG, "OpenCV loaded successfully");
 
-                    fr=new PersonRecognizer(mPath);
+                    fr = new PersonRecognizer(mPath);
                     String s = getResources().getString(R.string.Straininig);
                     //Toast.makeText(getApplicationContext(),s, Toast.LENGTH_LONG).show();
                     fr.load();
@@ -135,11 +119,12 @@ public class Recognize extends AppCompatActivity implements CameraBridgeViewBase
 
                     mOpenCvCameraView.enableView();
 
-                } break;
-                default:
-                {
+                }
+                break;
+                default: {
                     super.onManagerConnected(status);
-                } break;
+                }
+                break;
 
 
             }
@@ -166,11 +151,11 @@ public class Recognize extends AppCompatActivity implements CameraBridgeViewBase
         mOpenCvCameraView.setCvCameraViewListener(this);
 
         //mPath=getFilesDir()+"/facerecogOCV/";
-        mPath = Environment.getExternalStorageDirectory()+"/facerecogOCV/";
+        mPath = Environment.getExternalStorageDirectory() + "/facerecogOCV/";
 
         Log.e("Path", mPath);
 
-        labelsFile= new Labels(mPath);
+        labelsFile = new Labels(mPath);
 
         mHandler = new Handler() {
             @Override
@@ -196,36 +181,33 @@ public class Recognize extends AppCompatActivity implements CameraBridgeViewBase
         scan.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                if(b) {
-                    if(!fr.canPredict()) {
+                if (b) {
+                    if (!fr.canPredict()) {
                         scan.setChecked(false);
                         Toast.makeText(getApplicationContext(), getResources().getString(R.string.SCanntoPredic), Toast.LENGTH_LONG).show();
                         return;
                     }
                     faceState = SEARCHING;
-                }
-                else {
+                } else {
                     faceState = IDLE;
                 }
             }
         });
 
-        boolean success=(new File(mPath)).mkdirs();
-        if (!success)
-        {
-            Log.e("Error","Error creating directory");
+        boolean success = (new File(mPath)).mkdirs();
+        if (!success) {
+            Log.e("Error", "Error creating directory");
         }
 
         Button submit = (Button) findViewById(R.id.submit);
         submit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(uniqueNames.size() > 0) {
+                if (uniqueNames.size() > 0) {
                     Intent intent = new Intent(Recognize.this, ReviewResults.class);
                     intent.putExtra("list", uniqueNamesArray);
                     startActivity(intent);
-                }
-                else {
+                } else {
                     Toast.makeText(Recognize.this, "Empty list cannot be sent further", Toast.LENGTH_LONG).show();
                 }
             }
@@ -264,22 +246,19 @@ public class Recognize extends AppCompatActivity implements CameraBridgeViewBase
             if (mJavaDetector != null)
                 mJavaDetector.detectMultiScale(mGray, faces, 1.1, 2, 2, // TODO: objdetect.CV_HAAR_SCALE_IMAGE
                         new Size(mAbsoluteFaceSize, mAbsoluteFaceSize), new Size());
-        }
-        else if (mDetectorType == NATIVE_DETECTOR) {
+        } else if (mDetectorType == NATIVE_DETECTOR) {
             /*if (mNativeDetector != null)
                 mNativeDetector.detect(mGray, faces);*/
-        }
-        else {
+        } else {
             Log.e(TAG, "Detection method is not selected!");
         }
 
         Rect[] facesArray = faces.toArray();
 
-        if ((facesArray.length>0) && (faceState==SEARCHING))
-        {
-            Mat m=new Mat();
-            m=mGray.submat(facesArray[0]);
-            mBitmap = Bitmap.createBitmap(m.width(),m.height(), Bitmap.Config.ARGB_8888);
+        if ((facesArray.length > 0) && (faceState == SEARCHING)) {
+            Mat m = new Mat();
+            m = mGray.submat(facesArray[0]);
+            mBitmap = Bitmap.createBitmap(m.width(), m.height(), Bitmap.Config.ARGB_8888);
 
 
             Utils.matToBitmap(m, mBitmap);
@@ -289,7 +268,7 @@ public class Recognize extends AppCompatActivity implements CameraBridgeViewBase
             //mHandler.sendMessage(msg);
 
             textTochange = fr.predict(m);
-            mLikely=fr.getProb();
+            mLikely = fr.getProb();
             msg = new Message();
             msg.obj = textTochange;
             mHandler.sendMessage(msg);
@@ -320,7 +299,7 @@ public class Recognize extends AppCompatActivity implements CameraBridgeViewBase
         mOpenCvCameraView.disableView();
     }
 
-//    because capitalize is the new black
+    //    because capitalize is the new black
     private String capitalize(final String line) {
         return Character.toUpperCase(line.charAt(0)) + line.substring(1);
     }
