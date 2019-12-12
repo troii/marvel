@@ -33,7 +33,20 @@
             android:layout_height="0dp"
             android:layout_weight="1"
             android:background="@android:color/holo_purple"
-            android:text="@string/training"
+            android:text="Train"
+            android:textAllCaps="false"
+            android:textColor="@android:color/white"
+            android:textStyle="bold"
+            android:textSize="35sp"/>
+
+        <Button
+            android:id="@+id/clearData"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_marginTop="30dp"
+            android:background="@android:color/darker_gray"
+            android:text="Clear Data"
             android:textAllCaps="false"
             android:textColor="@android:color/white"
             android:textStyle="bold"
