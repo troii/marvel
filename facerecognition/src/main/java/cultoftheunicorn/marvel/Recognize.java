@@ -63,6 +63,7 @@ public class Recognize extends AppCompatActivity implements CameraBridgeViewBase
                     Log.i(TAG, "OpenCV loaded successfully");
 
                     personRecognizer = ((AppApplication) getApplication()).getPersonRecognizer();
+                    personRecognizer.load();
 
                     try {
                         // load cascade file from application resources
@@ -215,7 +216,6 @@ public class Recognize extends AppCompatActivity implements CameraBridgeViewBase
             Mat m = new Mat();
             m = mGray.submat(facesArray[0]);
             mBitmap = Bitmap.createBitmap(m.width(), m.height(), Bitmap.Config.ARGB_8888);
-
 
             Utils.matToBitmap(m, mBitmap);
             Message msg = new Message();
