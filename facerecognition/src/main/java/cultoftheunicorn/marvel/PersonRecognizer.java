@@ -118,14 +118,14 @@ public class PersonRecognizer {
             counter++;
         }
         if (counter > 0)
-            if (labelsFile.max() > 1)
+            if (labelsFile.max() > 0)
                 faceRecognizer.train(images, labels);
         labelsFile.Save();
         return true;
     }
 
     public boolean canPredict() {
-        return labelsFile.max() > 1;
+        return labelsFile.max() > 0;
 
     }
 
