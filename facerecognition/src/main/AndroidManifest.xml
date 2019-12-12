@@ -54,7 +54,7 @@
             android:screenOrientation="landscape" />
         <activity
             android:name="cultoftheunicorn.marvel.NameActivity"
-            android:windowSoftInputMode="adjustNothing" />
+            android:windowSoftInputMode="adjustResize" />
         <activity android:name="cultoftheunicorn.marvel.ReviewResults"
             android:label="Review and Mark"/>
 

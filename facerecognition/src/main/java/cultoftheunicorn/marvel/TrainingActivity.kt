@@ -29,7 +29,7 @@ private const val MAXIMG: Long = 10
 private val FACE_RECT_COLOR = Scalar(255.0, 0.0, 0.0, 255.0)
 
 class TrainingActivity : AppCompatActivity() {
-    private var mPath = ""
+    private lateinit var pathToImages: String
     private var mBitmap: Bitmap? = null
 
     private lateinit var username: String
@@ -59,8 +59,8 @@ class TrainingActivity : AppCompatActivity() {
         buttonCapture.setOnCheckedChangeListener { _, _ -> captureOnClick() }
 
         tutorial3View.setCvCameraViewListener(cameraViewListener)
-        mPath = Environment.getExternalStorageDirectory().toString() + "/facerecogOCV/"
-        if (!File(mPath).mkdirs()) {
+        pathToImages = Environment.getExternalStorageDirectory().toString() + "/facerecogOCV/"
+        if (!File(pathToImages).mkdirs()) {
             Log.e("Error", "Error creating directory")
         }
     }
@@ -96,8 +96,7 @@ class TrainingActivity : AppCompatActivity() {
             when (status) {
                 LoaderCallbackInterface.SUCCESS -> {
                     Log.i(TAG, "OpenCV loaded successfully")
-                    personRecognizer = PersonRecognizer(mPath)
-                    personRecognizer.load()
+                    personRecognizer = PersonRecognizer(pathToImages)
                     try { // load cascade file from application resources
                         val inputStream = resources.openRawResource(R.raw.lbpcascade_frontalface)
                         val cascadeDir = getDir("cascade", Context.MODE_PRIVATE)
