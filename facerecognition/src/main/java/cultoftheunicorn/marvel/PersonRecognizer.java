@@ -31,8 +31,21 @@ public class PersonRecognizer {
     private int mProb = 999;
 
 
+    /***
+     * createLBPHFaceRecognizer(int radius=1, int neighbors=8, int grid_x=8, int grid_y=8, double threshold=DBL_MAX
+     *
+     * radius – The radius used for building the Circular Local Binary Pattern. The greater the radius, the
+     * neighbors – The number of sample points to build a Circular Local Binary Pattern from. An appropriate value is to use `` 8`` sample points. Keep in mind: the more sample points you include, the higher the computational cost.
+     * grid_x – The number of cells in the horizontal direction, 8 is a common value used in publications. The more cells, the finer the grid, the higher the dimensionality of the resulting feature vector.
+     * grid_y – The number of cells in the vertical direction, 8 is a common value used in publications. The more cells, the finer the grid, the higher the dimensionality of the resulting feature vector.
+     * threshold – The threshold applied in the prediction. If the distance to the nearest neighbor is larger than the threshold, this method returns -1.
+     *
+     * details see: https://docs.opencv.org/2.4/modules/contrib/doc/facerec/facerec_api.html#Ptr%3CFaceRecognizer%3E%20createLBPHFaceRecognizer(int%20radius,%20int%20neighbors,%20int%20grid_x,%20int%20grid_y,%20double%20threshold)
+     *
+     * @param path
+     */
     PersonRecognizer(String path) {
-        faceRecognizer = com.googlecode.javacv.cpp.opencv_contrib.createLBPHFaceRecognizer(2, 8, 8, 8, 200);
+        faceRecognizer = com.googlecode.javacv.cpp.opencv_contrib.createLBPHFaceRecognizer(1, 8, 8, 8, 200);
         // path=Environment.getExternalStorageDirectory()+"/facerecog/faces/";
         mPath = path;
         labelsFile = new Labels(mPath);
@@ -152,14 +165,9 @@ public class PersonRecognizer {
 
 
     IplImage MatToIplImage(Mat m, int width, int heigth) {
-
-
         Bitmap bmp = Bitmap.createBitmap(m.width(), m.height(), Bitmap.Config.ARGB_8888);
-
-
         Utils.matToBitmap(m, bmp);
         return BitmapToIplImage(bmp, width, heigth);
-
     }
 
     IplImage BitmapToIplImage(Bitmap bmp, int width, int height) {
