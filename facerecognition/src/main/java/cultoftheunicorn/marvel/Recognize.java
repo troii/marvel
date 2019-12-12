@@ -45,11 +45,6 @@ public class Recognize extends AppCompatActivity implements CameraBridgeViewBase
     private static final int frontCam = 1;
     private static final int backCam = 2;
 
-    static {
-        OpenCVLoader.initDebug();
-        System.loadLibrary("opencv_java");
-    }
-
     String mPath = "";
     Bitmap mBitmap;
     Handler mHandler;
