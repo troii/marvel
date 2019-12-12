@@ -23,7 +23,6 @@ import org.opencv.core.MatOfRect;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
-import org.opencv.cultoftheunicorn.marvel.R;
 import org.opencv.objdetect.CascadeClassifier;
 
 import java.io.File;
@@ -43,7 +42,7 @@ public class Recognize extends AppCompatActivity implements CameraBridgeViewBase
     String mPath = "";
     Bitmap mBitmap;
     Handler mHandler;
-    PersonRecognizer fr;
+    PersonRecognizer personRecognizer;
     ToggleButton scan;
     Labels labelsFile;
     private int faceState = IDLE;
@@ -63,8 +62,7 @@ public class Recognize extends AppCompatActivity implements CameraBridgeViewBase
                 case LoaderCallbackInterface.SUCCESS: {
                     Log.i(TAG, "OpenCV loaded successfully");
 
-                    fr = new PersonRecognizer(mPath);
-                    fr.load();
+                    personRecognizer = ((AppApplication) getApplication()).getPersonRecognizer();
 
                     try {
                         // load cascade file from application resources
@@ -129,7 +127,7 @@ public class Recognize extends AppCompatActivity implements CameraBridgeViewBase
         mOpenCvCameraView = (Tutorial3View) findViewById(R.id.tutorial3_activity_java_surface_view);
         mOpenCvCameraView.setCvCameraViewListener(this);
 
-        //mPath=getFilesDir()+"/facerecogOCV/";
+        //path=getFilesDir()+"/facerecogOCV/";
         mPath = Environment.getExternalStorageDirectory() + "/facerecogOCV/";
 
         Log.e("Path", mPath);
@@ -154,7 +152,7 @@ public class Recognize extends AppCompatActivity implements CameraBridgeViewBase
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 if (b) {
-                    if (!fr.canPredict()) {
+                    if (!personRecognizer.canPredict()) {
                         scan.setChecked(false);
                         Toast.makeText(getApplicationContext(), getResources().getString(R.string.SCanntoPredic), Toast.LENGTH_LONG).show();
                         return;
@@ -225,11 +223,11 @@ public class Recognize extends AppCompatActivity implements CameraBridgeViewBase
             msg.obj = textTochange;
             //mHandler.sendMessage(msg);
 
-            textTochange = fr.predict(m);
-            int mLikely = fr.getProb();
+            textTochange = personRecognizer.predict(m);
+            int mLikely = personRecognizer.getProb();
 
             if (mLikely < 100) {
-                textTochange += " - likeliness: " + (100 - fr.getProb());
+                textTochange += " - likeliness: " + (100 - personRecognizer.getProb());
             } else {
                 textTochange = "not sure... do I know you?";
             }

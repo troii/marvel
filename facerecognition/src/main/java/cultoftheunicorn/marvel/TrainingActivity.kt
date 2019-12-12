@@ -17,7 +17,6 @@ import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2
 import org.opencv.android.LoaderCallbackInterface
 import org.opencv.android.Utils
 import org.opencv.core.*
-import org.opencv.cultoftheunicorn.marvel.R
 import org.opencv.objdetect.CascadeClassifier
 import java.io.File
 import java.io.FileOutputStream
