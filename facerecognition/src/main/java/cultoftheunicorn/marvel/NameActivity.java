@@ -1,6 +1,5 @@
 package cultoftheunicorn.marvel;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -24,9 +23,7 @@ public class NameActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if (!name.getText().toString().equals("")) {
-                    Intent intent = new Intent(NameActivity.this, Training.class);
-                    intent.putExtra("name", name.getText().toString().trim());
-                    startActivity(intent);
+                    TrainingActivity.Companion.start(NameActivity.this, name.getText().toString().trim());
                 } else {
                     Toast.makeText(NameActivity.this, "Please enter the name", Toast.LENGTH_LONG).show();
                 }
