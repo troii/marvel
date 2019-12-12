@@ -9,7 +9,6 @@ import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.CompoundButton;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
@@ -17,7 +16,6 @@ import android.widget.ToggleButton;
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.LoaderCallbackInterface;
-import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
@@ -39,16 +37,8 @@ public class Recognize extends AppCompatActivity implements CameraBridgeViewBase
     public static final int NATIVE_DETECTOR = 1;
     public static final int SEARCHING = 1;
     public static final int IDLE = 2;
-    static final long MAXIMG = 10;
     private static final String TAG = "OCVSample::Activity";
     private static final Scalar FACE_RECT_COLOR = new Scalar(0, 255, 0, 255);
-    private static final int frontCam = 1;
-    private static final int backCam = 2;
-
-    static {
-        OpenCVLoader.initDebug();
-        System.loadLibrary("opencv_java");
-    }
 
     String mPath = "";
     Bitmap mBitmap;
@@ -65,9 +55,7 @@ public class Recognize extends AppCompatActivity implements CameraBridgeViewBase
     private String[] mDetectorName;
     private float mRelativeFaceSize = 0.2f;
     private int mAbsoluteFaceSize = 0;
-    private int mLikely = 999;
     private Tutorial3View mOpenCvCameraView;
-    private ImageView Iv;
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
         public void onManagerConnected(int status) {
@@ -76,8 +64,6 @@ public class Recognize extends AppCompatActivity implements CameraBridgeViewBase
                     Log.i(TAG, "OpenCV loaded successfully");
 
                     fr = new PersonRecognizer(mPath);
-                    String s = getResources().getString(R.string.Straininig);
-                    //Toast.makeText(getApplicationContext(),s, Toast.LENGTH_LONG).show();
                     fr.load();
 
                     try {
@@ -240,7 +226,15 @@ public class Recognize extends AppCompatActivity implements CameraBridgeViewBase
             //mHandler.sendMessage(msg);
 
             textTochange = fr.predict(m);
-            mLikely = fr.getProb();
+            int mLikely = fr.getProb();
+
+            if (mLikely < 100) {
+                textTochange += " - likeliness: " + (100 - fr.getProb());
+            } else {
+                textTochange = "not sure... do I know you?";
+            }
+
+
             msg = new Message();
             // Log.d("recognizer", "message: " + textTochange);
             msg.obj = textTochange;
