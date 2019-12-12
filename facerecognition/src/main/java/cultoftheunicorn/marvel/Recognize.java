@@ -117,6 +117,7 @@ public class Recognize extends AppCompatActivity implements CameraBridgeViewBase
                         Log.e(TAG, "Failed to load cascade. Exception thrown: " + e);
                     }
 
+                    mOpenCvCameraView.setCamFront();
                     mOpenCvCameraView.enableView();
 
                 }
